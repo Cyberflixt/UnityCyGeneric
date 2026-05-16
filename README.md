@@ -1,6 +1,10 @@
 # UnityCyGeneric
 Generic utilities for Unity
 
+# Adding module
+
+git submodule add https://github.com/Cyberflixt/UnityCyGeneric.git Assets/Scripts/CyGeneric
+
 # Required packages
 
 - DOTween
