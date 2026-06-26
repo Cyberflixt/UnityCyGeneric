@@ -8,7 +8,7 @@ public class RopeRenderer : MonoBehaviour
     [SerializeField] private Transform endPosition;
     [SerializeField] private int resolution = 10;
 
-    [SerializeField] private int dipY = 3;
+    [SerializeField] private float dipY = 3;
 
     void Awake()
     {
