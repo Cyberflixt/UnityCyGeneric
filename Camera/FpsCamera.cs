@@ -4,9 +4,9 @@ using UnityEngine.InputSystem;
 
 public class FpsCamera : MonoBehaviour
 {
-    private InputAction actionCamera;
-    private Vector2 cameraVector = Vector2.zero;
-    private Vector2 cameraVectorSmooth = Vector2.zero;
+    private static InputAction actionCamera;
+    private static Vector2 cameraVector = Vector2.zero;
+    private static Vector2 cameraVectorSmooth = Vector2.zero;
 
     [NonSerialized] public static float sensibility = 0.2f;
 
@@ -22,6 +22,9 @@ public class FpsCamera : MonoBehaviour
 
     private void Update()
     {
+        if (Cursor.lockState == CursorLockMode.None)
+            return;
+
         if (InputExt.ready)
         {
             Vector2 cameraDelta = actionCamera.ReadValue<Vector2>();

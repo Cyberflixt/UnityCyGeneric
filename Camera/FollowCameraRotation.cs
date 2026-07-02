@@ -4,6 +4,8 @@ public class FollowCameraRotation : MonoBehaviour
 {
     void LateUpdate()
     {
-        transform.forward = Camera.main.transform.forward.Flat();
+        Vector3 v = Camera.main.transform.forward.Flat();
+        if (v != Vector3.zero)
+            transform.forward = v;
     }
 }

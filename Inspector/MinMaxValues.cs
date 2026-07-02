@@ -19,6 +19,7 @@ public class MinMaxInt
     /// Inclusive int number between min and max
     /// </summary>
     public int GetRandom(){
+        if (min == max) return min;
         return UnityEngine.Random.Range(min, max+1);
     }
 }
@@ -41,6 +42,7 @@ public class MinMaxFloat
     /// Random float between min and max
     /// </summary>
     public float GetRandom(){
+        if (min == max) return min;
         return UnityEngine.Random.Range(min, max);
     }
 }
