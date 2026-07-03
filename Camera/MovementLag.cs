@@ -19,15 +19,12 @@ public class MovementLag : MonoBehaviour
     {
         transform.position = Vector3.Lerp(projectionSpace.TransformPoint(oldLocalPos), transform.parent.TransformPoint(defaultLocalPos), Time.deltaTime * speed);
         oldLocalPos = projectionSpace.InverseTransformPoint(transform.position);
+
+        //transform.position = transform.parent.TransformPoint(defaultLocalPos);
     }
 
-    //private Vector3 vtp;
-    public void BeforeTeleport()
+    public void Teleported(Quaternion rotationOffset)
     {
-        //oldLocalPos = projectionSpace.InverseTransformPoint(transform.position);
-    }
-    public void AfterTeleport()
-    {
-        //oldLocalPos = projectionSpace.InverseTransformPoint(transform.parent.TransformPoint(defaultLocalPos));
+        oldLocalPos = rotationOffset * oldLocalPos;
     }
 }
