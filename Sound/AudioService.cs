@@ -86,6 +86,7 @@ public class AudioService : MonoBehaviour
         {
             Debug.LogWarning("Warning, world sound poool was not sufficient!");
         }
+        src.transform.position = position;
         PlayAudioSourceClip(src, audioClipByHash[hash], randomPitch, basePitch);
     }
 

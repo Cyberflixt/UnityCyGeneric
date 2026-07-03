@@ -7,14 +7,13 @@ using System;
 /// <summary>
 /// Component to play sound on rigid body collisions automatically
 /// </summary>
+[RequireComponent(typeof(ObjectData))]
 public class SoundCollider : MonoBehaviour
 {
-    [SerializeField] public ObjectMaterial material = ObjectMaterial.Concrete;
-
-    
     private SoundColliderInstance soundCollider;
     private void Awake(){
-        soundCollider = new SoundColliderInstance(material, GetComponent<Rigidbody>());
+        ObjectData data = GetComponent<ObjectData>();
+        soundCollider = new SoundColliderInstance(data.material, GetComponent<Rigidbody>());
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -34,7 +33,6 @@ public class SoundColliderInstance
         this.rigidbody = rigidbody;
         previousTick = 0;
     }
-    
     
     private const float cooldown = .2f; // cooldown between audio
     private const float thresholdMin = .000005f; // minimum force
@@ -60,6 +58,7 @@ public class SoundColliderInstance
         // Large
         return (Sounds.GetAudioClip(name), name);
     }
+
     public void CollisionSound(Collision collision){
         // Is force strong enough to trigger sound?
         float force = collision.impulse.magnitude;

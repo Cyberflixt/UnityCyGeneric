@@ -12,6 +12,8 @@ public class FpsCamera : MonoBehaviour
 
     private const float maxPitch = 90;
 
+    private Quaternion baseRotation = Quaternion.identity;
+
     private void Start()
     {
         InputExt.ReadyCallback(() =>
@@ -36,6 +38,11 @@ public class FpsCamera : MonoBehaviour
         }
 
         cameraVectorSmooth = Vector2.Lerp(cameraVectorSmooth, cameraVector, Time.deltaTime * 20);
-        transform.rotation = Quaternion.Euler(0, cameraVectorSmooth.x, 0) * Quaternion.Euler(-cameraVectorSmooth.y, 0, 0);
+        transform.rotation = baseRotation * Quaternion.Euler(0, cameraVectorSmooth.x, 0) * Quaternion.Euler(-cameraVectorSmooth.y, 0, 0);
+    }
+
+    public void Rotate(Quaternion rotOffset)
+    {
+        baseRotation *= rotOffset;
     }
 }

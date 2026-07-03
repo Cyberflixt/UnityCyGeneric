@@ -14,14 +14,17 @@ public class Sounds : MonoBehaviour
 {
     // Singleton
     public static Sounds instance;
-    [SerializeField] private Transform prefab_Sound3D;
-    [SerializeField] private Transform prefab_SoundFlat;
+    //[SerializeField] private Transform prefab_Sound3D;
+    //[SerializeField] private Transform prefab_SoundFlat;
+    [Header("Order: SFX, MUSIC")]
     [SerializeField] private AudioMixerGroup[] mixersArray;
 
     public static float mainVolume = 0.2f;
     public static Dictionary<string, AudioClip> audios = new Dictionary<string, AudioClip>();
     private static Dictionary<string, int> audiosArrayMax = new Dictionary<string, int>();
 
+    private static AudioSource flatAudioSource;
+    private static AudioSource worldAudioSource;
 
     // Events
     public void Start(){
@@ -39,6 +42,16 @@ public class Sounds : MonoBehaviour
 
     private static void Preload()
     {
+        GameObject flatAudioSourceObject = new("runtime_flatAudioSource");
+        flatAudioSource = flatAudioSourceObject.AddComponent<AudioSource>();
+        flatAudioSource.spatialBlend = 0;
+        flatAudioSource.playOnAwake = false;
+
+        GameObject worldAudioSourceObject = new("runtime_worldAudioSource");
+        worldAudioSource = worldAudioSourceObject.AddComponent<AudioSource>();
+        worldAudioSource.spatialBlend = 1;
+        worldAudioSource.playOnAwake = false;
+        
         // Preload
         AudioClip[] allAudios = Resources.LoadAll<AudioClip>("Audio");
         foreach(AudioClip audio in allAudios){
@@ -124,6 +137,8 @@ public class Sounds : MonoBehaviour
     /// <param name="volume">volume, default = 1</param>
     public static AudioSource PlayAudio(SoundsType ty, string audioName, Vector3 position, float volume = 1, float randomPitch = 0){
         AudioClip audioClip = GetAudioClip(audioName);
+        if (audioClip == null)
+            throw new ArgumentException($"Did not find audio clip! Name: \""+audioName+"\"");
         return PlayAudio(ty, audioClip, position, volume, randomPitch);
     }
 
@@ -139,7 +154,7 @@ public class Sounds : MonoBehaviour
         if (instance == null)
             return null;
 
-        Transform audioSource = Instantiate(instance.prefab_Sound3D, position, Quaternion.identity);
+        Transform audioSource = Instantiate(worldAudioSource.transform, position, Quaternion.identity);
         AudioSource src = SetAudioClip(ty, audioSource, audioClip, volume, randomPitch);
         PlayAudioOneshot(src);
         return src;
@@ -152,7 +167,7 @@ public class Sounds : MonoBehaviour
         if (audioClip == null)
             throw new ArgumentException($"Tried to play a null AudioClip!");
 
-        Transform audioSource = Instantiate(instance.prefab_SoundFlat, Vector3.zero, Quaternion.identity);
+        Transform audioSource = Instantiate(flatAudioSource.transform, Vector3.zero, Quaternion.identity);
         AudioSource src = SetAudioClip(ty, audioSource, audioClip, volume, randomPitch);
         PlayAudioOneshot(src);
         return src;
@@ -169,7 +184,7 @@ public class Sounds : MonoBehaviour
     /// Create 2D sound by AudioClip
     /// </summary>
     public static AudioSource CreateAudioFlat(SoundsType ty, AudioClip audioClip, float volume = 1, float randomPitch = 0){
-        Transform audioSource = Instantiate(instance.prefab_SoundFlat, Vector3.zero, Quaternion.identity);
+        Transform audioSource = Instantiate(flatAudioSource.transform, Vector3.zero, Quaternion.identity);
         AudioSource src = SetAudioClip(ty, audioSource, audioClip, volume, randomPitch);
         return src;
     }
@@ -185,7 +200,7 @@ public class Sounds : MonoBehaviour
     /// Play AudioClip, parented to a transform
     /// </summary>
     public static AudioSource PlayAudioAttach(SoundsType ty, AudioClip audioClip, Transform transform, float volume = 1, float randomPitch = 0){
-        Transform audioSource = Instantiate(instance.prefab_Sound3D, transform);
+        Transform audioSource = Instantiate(worldAudioSource.transform, transform);
         AudioSource src = SetAudioClip(ty, audioSource, audioClip, volume, randomPitch);
         PlayAudioOneshot(src);
         return src;
