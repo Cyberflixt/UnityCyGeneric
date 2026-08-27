@@ -78,13 +78,14 @@ public static class Utils
         return Hitbox(pos, transform.rotation, size, mask);
     }
 
-    public static void StartAnimation(this Animator animator, string name, float transition = .1f)
+    public static void StartAnimation(this Animator animator, string name, float transition = .1f, int layer = 0)
     {
-        animator.CrossFade(name, transition, 0, 0f, 0f);
+        animator.CrossFade(name, transition, layer, 0f, 0f);
     }
-    public static void StartAnimation(this Animator animator, int state_hash, float transition = .1f)
+
+    public static void StartAnimation(this Animator animator, int state_hash, float transition = .1f, int layer = 0)
     {
-        animator.CrossFade(state_hash, transition, 0, 0f, 0f);
+        animator.CrossFade(state_hash, transition, layer, 0f, 0f);
     }
 
     public static Vector3 Flat(this Vector3 v)
