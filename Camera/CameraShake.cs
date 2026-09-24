@@ -7,25 +7,27 @@ public class CameraShake : MonoBehaviour
     {
         public float time;
         public float strength;
-        public Vector3 position;
         public float duration;
+        public Vector3 position;
+        public bool hasPosition;
 
-        public ShakeData(float strength, Vector3 position, float duration)
+        public ShakeData(float strength, float duration, Vector3 position, bool hasPosition)
         {
             time = Time.time;
             this.strength = strength;
-            this.position = position;
             this.duration = duration;
+            this.position = position;
+            this.hasPosition = hasPosition;
         }
     }
-    
+
     public static List<ShakeData> shakes = new();
 
     public Quaternion rotation = Quaternion.identity;
     public static CameraShake instance = null;
     public static bool active
     {
-        get {return instance != null;}
+        get { return instance != null; }
     }
 
     private void OnEnable()
@@ -38,15 +40,23 @@ public class CameraShake : MonoBehaviour
     }
 
 
-    public static void AddShake(float strength, Vector3 position, float duration)
+    public static void AddShake(float strength, float duration, Vector3 position)
     {
-        shakes.Add(new ShakeData(strength, position, duration));
+        shakes.Add(new ShakeData(strength, duration, position, true));
     }
+
+    public static void AddShake(float strength, float duration)
+    {
+        shakes.Add(new ShakeData(strength, duration, Vector3.zero, false));
+    }
+
+    private const bool useMaxAmplitude = true; // Use strongest shake or sum up all shakes strengths otherwise
 
     void Update()
     {
         // Get total amplitude from shakes
         float totalAmplitude = 0;
+        float maxAmplitude = 0;
 
         for (int i = 0; i < shakes.Count; i++)
         {
@@ -55,10 +65,22 @@ public class CameraShake : MonoBehaviour
 
             if (t > 0)
             {
-                float dist = Vector3.Distance(transform.position, data.position);
+                if (data.hasPosition)
+                {
+                    float dist = Vector3.Distance(transform.position, data.position);
 
-                float amplitude = t * t * data.strength / dist;
-                totalAmplitude += amplitude;
+                    float amplitude = t * t * data.strength / dist * 0.01f;
+                    if (amplitude > maxAmplitude)
+                        maxAmplitude = amplitude;
+                    totalAmplitude += amplitude;
+                }
+                else
+                {
+                    float amplitude = t * t * data.strength * 0.001f;
+                    if (amplitude > maxAmplitude)
+                        maxAmplitude = amplitude;
+                    totalAmplitude += amplitude;
+                }
             }
             else
             {
@@ -67,14 +89,16 @@ public class CameraShake : MonoBehaviour
             }
         }
 
+        float finalAmplitude = useMaxAmplitude ? maxAmplitude : totalAmplitude;
+
         float freq = 100;
         transform.localPosition = new Vector3(
             Mathf.Sin(Time.time * freq),
             Mathf.Sin(Time.time * freq * 1.32f),
             Mathf.Sin(Time.time * freq * .8489f)
-        ) * totalAmplitude;
+        ) * finalAmplitude;
 
-        float rotFac = 80f * totalAmplitude;
+        float rotFac = 80f * finalAmplitude;
         rotation = Quaternion.Euler(
             Mathf.Sin(Time.time * freq) * rotFac,
             Mathf.Sin(Time.time * freq * 1.32f) * rotFac,
