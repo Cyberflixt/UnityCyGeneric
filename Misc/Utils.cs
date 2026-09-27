@@ -137,11 +137,10 @@ public static class Utils
 
     public static Vector3 Vector3Random()
     {
-        float v = 1;
         return new Vector3(
-            UnityEngine.Random.Range(-v, v),
-            UnityEngine.Random.Range(-v, v),
-            UnityEngine.Random.Range(-v, v)
+            UnityEngine.Random.Range(-1f, 1f),
+            UnityEngine.Random.Range(-1f, 1f),
+            UnityEngine.Random.Range(-1f, 1f)
         );
     }
 
