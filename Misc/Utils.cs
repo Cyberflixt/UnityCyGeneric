@@ -144,6 +144,15 @@ public static class Utils
         );
     }
 
+    public static Vector3 Vector3RandomXZ(float yValue = 1)
+    {
+        return new Vector3(
+            UnityEngine.Random.Range(-1f, 1f),
+            yValue,
+            UnityEngine.Random.Range(-1f, 1f)
+        );
+    }
+
     public static List<Renderer> GetRenderers(Transform start)
     {
         List<Renderer> renderers = new List<Renderer>();
