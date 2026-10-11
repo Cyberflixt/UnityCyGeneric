@@ -5,7 +5,9 @@ using UnityEngine;
 public sealed class WaitOneFrame { }
 
 /// <summary>
-/// Unity coroutines are ass, use this instead with yield return new WaitOneFrame()
+/// Unity coroutines are ass:
+/// It can wait at unwanted moments
+/// Use FrameCoroutine.StartCoroutine with yield return new WaitOneFrame() or WaitForSeconds()
 /// </summary>
 public class FrameCoroutines : MonoBehaviour
 {
@@ -101,6 +103,19 @@ public class FrameCoroutines : MonoBehaviour
         while (Time.time < startTime + seconds)
         {
             yield return new WaitOneFrame();
+        }
+    }
+
+    /// <summary>
+    /// Use this instead of WaitForSeconds if you're using a FrameCoroutine
+    /// </summary>
+    public static IEnumerator WaitForSecondsRealtime(float seconds)
+    {
+        float timeLeft = seconds;
+        while (timeLeft > 0)
+        {
+            yield return new WaitOneFrame();
+            timeLeft -= Time.unscaledDeltaTime;
         }
     }
 }

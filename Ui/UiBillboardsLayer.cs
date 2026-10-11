@@ -4,53 +4,67 @@ using UnityEngine;
 
 public class UiBillboardsLayer : MonoBehaviour
 {
-    private readonly Dictionary<Transform, Transform> billboards = new();
-    private readonly Dictionary<Transform, Vector3> billboardsPosition = new();
-    private readonly Dictionary<Transform, Transform> billboardsPermanent = new();
+    public static UiBillboardsLayer instance;
 
-    private void Project(Vector3 world, Transform bb)
+    private static Dictionary<Transform, Transform> billboards = new Dictionary<Transform, Transform>();
+    private static Dictionary<Transform, Vector3> billboardsPosition = new Dictionary<Transform, Vector3>();
+    public DamagePopup prefabDamagePopup = null;
+
+    private static void Project(Transform bb, Vector3 world)
     {
         Vector3 screenPos = Camera.main.WorldToScreenPoint(world);
         bb.position = new Vector3(screenPos.x, screenPos.y, 0);
     }
 
-    public void Attach(Transform worldObject, Transform uiBillboard)
+    public static void Attach(Transform uiBillboard, Transform worldObject)
     {
-        if (uiBillboard.parent != transform)
-            uiBillboard.SetParent(transform);
-        billboards[worldObject] = uiBillboard;
-        Project(worldObject.position, uiBillboard);
+        if (uiBillboard.parent != instance.transform)
+            uiBillboard.SetParent(instance.transform);
+        billboards[uiBillboard] = worldObject;
+        Project(uiBillboard, worldObject.position);
     }
 
-    public void AttachPermanent(Transform worldObject, Transform uiBillboard)
+    public static void Attach(Transform uiBillboard, Vector3 worldPos)
     {
-        if (uiBillboard.parent != transform)
-            uiBillboard.SetParent(transform);
-        billboardsPermanent[worldObject] = uiBillboard;
-        Project(worldObject.position, uiBillboard);
-    }
-
-    public void Attach(Vector3 worldPos, Transform uiBillboard)
-    {
-        uiBillboard.SetParent(transform);
+        uiBillboard.SetParent(instance.transform);
         billboardsPosition[uiBillboard] = worldPos;
-        Project(worldPos, uiBillboard);
+        Project(uiBillboard, worldPos);
     }
 
-    public void RemoveBillboards(Transform worldObject)
+    public static void AttachOnce(Transform uiBillboard, Vector3 worldPos)
     {
-        Destroy(billboards[worldObject].gameObject);
+        uiBillboard.SetParent(instance.transform);
+        Project(uiBillboard, worldPos);
+    }
+
+    public static void RemoveAttachedBillboards(Transform worldObject)
+    {
+        if (billboards[worldObject])
+            Destroy(billboards[worldObject].gameObject);
         billboards.Remove(worldObject);
     }
 
+    public static void CreateDamagePopup(Vector3 pos, string damage)
+    {
+        DamagePopup popup = Instantiate(instance.prefabDamagePopup);
+        Attach(popup.transform, pos);
+        popup.SetText(damage);
+    }
+
+    void Start()
+    {
+        instance = this;
+    }
+
+    List<Transform> toDelete = new();
     void LateUpdate()
     {
-        // Update attached transform billboards
-        List<Transform> toDelete = new();
+        // Update attached billboards
+        toDelete.Clear();
         foreach (KeyValuePair<Transform, Transform> kv in billboards)
         {
             if (kv.Key)
-                Project(kv.Key.position, kv.Value);
+                Project(kv.Key, kv.Value.position);
             else
                 // Object doesnt exist anymore, delete
                 toDelete.Add(kv.Key);
@@ -58,14 +72,14 @@ public class UiBillboardsLayer : MonoBehaviour
 
         // Deletions
         foreach (Transform k in toDelete)
-            RemoveBillboards(k);
+            RemoveAttachedBillboards(k);
 
-        // Update attached position billboards
-        toDelete = new();
+        // Update attached billboards
+        toDelete.Clear();
         foreach (KeyValuePair<Transform, Vector3> kv in billboardsPosition)
         {
             if (kv.Key)
-                Project(kv.Value, kv.Key);
+                Project(kv.Key, kv.Value);
             else
                 // Object doesnt exist anymore, delete
                 toDelete.Add(kv.Key);
@@ -73,12 +87,6 @@ public class UiBillboardsLayer : MonoBehaviour
 
         // Deletions
         foreach (Transform k in toDelete)
-        {
             billboardsPosition.Remove(k);
-        }
-
-        // Permanent billboards
-        foreach (KeyValuePair<Transform, Transform> kv in billboardsPermanent)
-            Project(kv.Key.position, kv.Value);
     }
 }
