@@ -22,7 +22,7 @@ public class MouseParallax : MonoBehaviour
         Vector2 mousePosition = mouseInput.ReadValue<Vector2>();
         //float maxDim = Screen.width > Screen.height ? Screen.width : Screen.height;
 
-        position = Vector3.Lerp(position, (mousePosition - screenCenter) * strength, lerpSmooth * Time.deltaTime);
+        position = Vector3.Lerp(position, (mousePosition - screenCenter) * strength, lerpSmooth * Time.unscaledDeltaTime);
         transform.localPosition = position;
     }
 }
