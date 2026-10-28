@@ -23,7 +23,7 @@ public class AnimationScale : AnimationElementDelayed
         string easeId = transform.GetInstanceID()+"AnimationScale";
         DOTween.Kill(easeId);
 
-        var tween = DOTween.To(() => transform.localScale, (x) => transform.localScale = x, endScale, duration).SetEase(ease).SetId(easeId);
+        var tween = DOTween.To(() => transform.localScale, (x) => transform.localScale = x, endScale, duration).SetEase(ease).SetUpdate(true).SetId(easeId);
         if (waitForCompletion)
             yield return tween.WaitForCompletion();
     }

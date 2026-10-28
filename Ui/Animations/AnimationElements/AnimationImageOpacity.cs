@@ -25,7 +25,7 @@ public class AnimationImageOpacity : AnimationElementDelayed
         string easeId = target.GetInstanceID()+"AnimationImageOpacity";
         DOTween.Kill(easeId);
 
-        var tween = DOTween.To(() => target.color.a, (x) => target.color = new Color(target.color.r, target.color.g, target.color.b, x), endOpacity, duration).SetEase(ease).SetId(easeId);
+        var tween = DOTween.To(() => target.color.a, (x) => target.color = new Color(target.color.r, target.color.g, target.color.b, x), endOpacity, duration).SetEase(ease).SetUpdate(true).SetId(easeId);
         if (waitForCompletion)
             yield return tween.WaitForCompletion();
     }

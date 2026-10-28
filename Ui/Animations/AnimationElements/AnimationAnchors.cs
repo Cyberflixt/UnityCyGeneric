@@ -35,7 +35,7 @@ public class AnimationAnchors : AnimationElementDelayed
             v => {
                 transform.anchorMin = new Vector2(v.x, v.y);
                 transform.anchorMax = new Vector2(v.z, v.w);
-            }, new Vector4(endAnchorMin.x, endAnchorMin.y, endAnchorMax.x, endAnchorMax.y), duration).SetEase(ease).SetId(easeId);
+            }, new Vector4(endAnchorMin.x, endAnchorMin.y, endAnchorMax.x, endAnchorMax.y), duration).SetEase(ease).SetUpdate(true).SetId(easeId);
 
         if (waitForCompletion)
             yield return tween.WaitForCompletion();

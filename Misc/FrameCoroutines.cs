@@ -96,6 +96,7 @@ public class FrameCoroutines : MonoBehaviour
 
     /// <summary>
     /// Use this instead of WaitForSeconds if you're using a FrameCoroutine
+    /// yield return FrameCoroutines.WaitForSeconds(duration);
     /// </summary>
     public static IEnumerator WaitForSeconds(float seconds)
     {
@@ -107,7 +108,8 @@ public class FrameCoroutines : MonoBehaviour
     }
 
     /// <summary>
-    /// Use this instead of WaitForSeconds if you're using a FrameCoroutine
+    /// Use this instead of WaitForSecondsRealtime if you're using a FrameCoroutine
+    /// yield return FrameCoroutines.WaitForSecondsRealtime(duration);
     /// </summary>
     public static IEnumerator WaitForSecondsRealtime(float seconds)
     {

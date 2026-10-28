@@ -25,7 +25,7 @@ public class AnimationImageColor : AnimationElementDelayed
         string easeId = target.GetInstanceID()+"AnimationImageColor";
         DOTween.Kill(easeId);
 
-        var tween = DOTween.To(() => target.color, (x) => target.color = x, endColor, duration).SetEase(ease).SetId(easeId);
+        var tween = DOTween.To(() => target.color, (x) => target.color = x, endColor, duration).SetEase(ease).SetUpdate(true).SetId(easeId);
         if (waitForCompletion)
             yield return tween.WaitForCompletion();
     }

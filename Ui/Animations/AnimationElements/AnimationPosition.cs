@@ -24,7 +24,7 @@ public class AnimationPosition : AnimationElementDelayed
         string easeId = transform.GetInstanceID()+"AnimationImageColor";
         DOTween.Kill(easeId);
 
-        var tween = transform.DOLocalMove(endPosition, duration).SetEase(ease).SetId(easeId);
+        var tween = transform.DOLocalMove(endPosition, duration).SetEase(ease).SetUpdate(true).SetId(easeId);
         if (waitForCompletion)
             yield return tween.WaitForCompletion();
     }

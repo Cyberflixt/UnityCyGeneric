@@ -28,7 +28,7 @@ public abstract class AnimationElementDelayed : AnimationElementBase
             if (delay > 0)
             {
                 float t = Time.time;
-                yield return FrameCoroutines.WaitForSeconds(delay);
+                yield return FrameCoroutines.WaitForSecondsRealtime(delay);
                 if (isPlaying())
                 {
                     yield return VirtAnimationCoroutine(isPlaying);

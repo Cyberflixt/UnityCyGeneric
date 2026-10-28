@@ -7,7 +7,7 @@ public class DisableAfter : MonoBehaviour
 
     private IEnumerator Start()
     {
-        yield return new WaitForSeconds(delay);
+        yield return new WaitForSecondsRealtime(delay);
         gameObject.SetActive(false);
     }
 }

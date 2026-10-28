@@ -25,7 +25,7 @@ public class AnimationCanvasGroupOpacity : AnimationElementDelayed
         string easeId = target.GetInstanceID()+"AnimationCanvasGroupOpacity";
         DOTween.Kill(easeId);
 
-        var tween = DOTween.To(() => target.alpha, (x) => target.alpha = x, endOpacity, duration).SetEase(ease).SetId(easeId);
+        var tween = DOTween.To(() => target.alpha, (x) => target.alpha = x, endOpacity, duration).SetEase(ease).SetUpdate(true).SetId(easeId);
         if (waitForCompletion)
             yield return tween.WaitForCompletion();
     }

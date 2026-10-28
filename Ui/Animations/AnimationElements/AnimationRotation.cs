@@ -24,7 +24,7 @@ public class AnimationRotation : AnimationElementDelayed
         string easeId = transform.GetInstanceID()+"AnimationRotation";
         DOTween.Kill(easeId);
 
-        var tween = transform.DOLocalRotate(endRotation, duration, RotateMode.FastBeyond360).SetEase(ease).SetId(easeId);
+        var tween = transform.DOLocalRotate(endRotation, duration, RotateMode.FastBeyond360).SetEase(ease).SetUpdate(true).SetId(easeId);
         if (waitForCompletion)
             yield return tween.WaitForCompletion();
     }
