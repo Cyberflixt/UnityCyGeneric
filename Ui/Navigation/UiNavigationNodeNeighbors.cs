@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 [Serializable]
 public struct NavigationNodeNeighbor
 {
+    [Header("Set dir to (0,0) for automatic direction")]
     public Vector2 dir;
     public UiNavigationNode node;
 
@@ -17,5 +18,5 @@ public struct NavigationNodeNeighbor
 
 public class UiNavigationNodeNeighbors : UiNavigationNode
 {
-    public NavigationNodeNeighbor[] neighbors;
+    public List<NavigationNodeNeighbor> neighbors;
 }

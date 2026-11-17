@@ -52,7 +52,10 @@ public class CameraShake : MonoBehaviour
 
     private const bool useMaxAmplitude = true; // Use strongest shake or sum up all shakes strengths otherwise
 
-    void Update()
+    private static Quaternion rotationOffset;
+    private static Vector3 positionOffset;
+
+    void UpdateOffsets()
     {
         // Get total amplitude from shakes
         float totalAmplitude = 0;
@@ -92,18 +95,26 @@ public class CameraShake : MonoBehaviour
         float finalAmplitude = useMaxAmplitude ? maxAmplitude : totalAmplitude;
 
         float freq = 100;
-        transform.localPosition = new Vector3(
+        positionOffset = new Vector3(
             Mathf.Sin(Time.time * freq),
             Mathf.Sin(Time.time * freq * 1.32f),
             Mathf.Sin(Time.time * freq * .8489f)
         ) * finalAmplitude;
 
         float rotFac = 80f * finalAmplitude;
-        rotation = Quaternion.Euler(
+        rotationOffset = Quaternion.Euler(
             Mathf.Sin(Time.time * freq) * rotFac,
             Mathf.Sin(Time.time * freq * 1.32f) * rotFac,
             Mathf.Sin(Time.time * freq * .8489f) * rotFac
         );
-        transform.localRotation = rotation;
+    }
+    
+    void Update()
+    {
+        if (instance == this)
+            UpdateOffsets();
+            
+        transform.localPosition = positionOffset;
+        transform.localRotation = rotationOffset;
     }
 }

@@ -166,7 +166,8 @@ public class Sounds : MonoBehaviour
     public static AudioSource PlayAudioFlat(SoundsType ty, AudioClip audioClip, float volume = 1, float randomPitch = 0){
         if (audioClip == null)
             throw new ArgumentException($"Tried to play a null AudioClip!");
-
+        if (flatAudioSource == null)
+            return null;
         Transform audioSource = Instantiate(flatAudioSource.transform, Vector3.zero, Quaternion.identity);
         AudioSource src = SetAudioClip(ty, audioSource, audioClip, volume, randomPitch);
         PlayAudioOneshot(src);

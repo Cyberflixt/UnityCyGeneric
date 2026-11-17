@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Steamworks.Data;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,11 +12,19 @@ public class UiNavigationHandler : MonoBehaviour
 
     public static void NavigateTo(UiNavigationNode node)
     {
-        if (currentNode != null)
-            currentNode.Deselected();
-        currentNode = node;
-        nodeHistory.Push(node);
-        node.Selected();
+        if (node)
+        {
+            if (currentNode != null)
+                currentNode.Deselected();
+            currentNode = node;
+            nodeHistory.Push(node);
+            node.Selected();
+        }
+        else
+        {
+            currentNode = null;
+            nodeHistory.Clear();
+        }
     }
 
     public static void NavigateUndo()
@@ -53,6 +62,19 @@ public class UiNavigationHandler : MonoBehaviour
         else
         {
             currentNode = null;
+        }
+    }
+
+    public static void UndoUntilNotNull()
+    {
+        if (nodeHistory.Count > 0 && (!nodeHistory.Peek() || !nodeHistory.Peek().gameObject.activeInHierarchy))
+        {
+            while (nodeHistory.Count > 0 && (!nodeHistory.Peek() || !nodeHistory.Peek().gameObject.activeInHierarchy))
+                nodeHistory.Pop();
+            if (nodeHistory.Count > 0)
+                NavigateTo(nodeHistory.Peek());
+            else
+                NavigateTo(null);
         }
     }
 
@@ -117,27 +139,30 @@ public class UiNavigationHandler : MonoBehaviour
 
             foreach (NavigationNodeNeighbor neighborKV in nodeNeigh.neighbors)
             {
-                float alignment;
-                if (neighborKV.dir == Vector2.zero)
+                if (neighborKV.node)
                 {
-                    // Get neighbor world position
-                    RectTransform neighborRect = neighborKV.node.GetComponent<RectTransform>();
-                    Vector3 neighborPos = neighborRect.TransformPoint(neighborRect.rect.center);
+                    float alignment;
+                    if (neighborKV.dir == Vector2.zero)
+                    {
+                        // Get neighbor world position
+                        RectTransform neighborRect = neighborKV.node.GetComponent<RectTransform>();
+                        Vector3 neighborPos = neighborRect.TransformPoint(neighborRect.rect.center);
 
-                    // Get alignment
-                    Vector2 dir = (neighborPos - currentPos).normalized;
-                    float dist = (neighborPos - currentPos).sqrMagnitude;
-                    alignment = Vector2.Dot(move, dir) / dist;
-                }
-                else
-                {
-                    alignment = Vector2.Dot(move, neighborKV.dir);
-                }
+                        // Get alignment
+                        Vector2 dir = (neighborPos - currentPos).normalized;
+                        float dist = (neighborPos - currentPos).sqrMagnitude;
+                        alignment = Vector2.Dot(move, dir) / dist;
+                    }
+                    else
+                    {
+                        alignment = Vector2.Dot(move, neighborKV.dir);
+                    }
 
-                if (alignment > bestAlignment)
-                {
-                    bestAlignment = alignment;
-                    bestNeighbor = neighborKV.node;
+                    if (alignment > bestAlignment)
+                    {
+                        bestAlignment = alignment;
+                        bestNeighbor = neighborKV.node;
+                    }
                 }
             }
 

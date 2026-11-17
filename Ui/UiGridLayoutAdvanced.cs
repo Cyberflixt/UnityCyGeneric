@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -59,6 +58,16 @@ public class UiGridLayoutAdvanced : LayoutGroup
     public Vector2 spacing { get { return m_Spacing; } set { SetProperty(ref m_Spacing, value); } }
 
     /// <summary>
+    /// The current number of rows in the grid.
+    /// </summary>
+    public int rowCount { get; private set; }
+
+    /// <summary>
+    /// The current number of columns in the grid.
+    /// </summary>
+    public int columnCount { get; private set; }
+
+    /// <summary>
     /// Helper method to calculate actual pixel size of cells based on Dim3 constraints and current RectTransform size.
     /// Note: Treats Percentage fields as 0-100 (divided by 100f).
     /// </summary>
@@ -76,6 +85,96 @@ public class UiGridLayoutAdvanced : LayoutGroup
                  (m_cellHeight.yPercentage / 100f * parentHeight);
 
         return new Vector2(Mathf.Max(0, w), Mathf.Max(0, h));
+    }
+
+    /// <summary>
+    /// Calculates the current column and row count based on child count and available space.
+    /// </summary>
+    private void CalculateGridDimensions(Vector2 cellSize, out int actualColumns, out int actualRows)
+    {
+        if (rectChildren.Count == 0)
+        {
+            actualColumns = 0;
+            actualRows = 0;
+            return;
+        }
+
+        float innerWidth = rectTransform.rect.width - padding.horizontal;
+        float innerHeight = rectTransform.rect.height - padding.vertical;
+
+        // Protect against zero division if settings are 0
+        float spaceAndCellX = Mathf.Max(0.001f, cellSize.x + m_Spacing.x);
+        float spaceAndCellY = Mathf.Max(0.001f, cellSize.y + m_Spacing.y);
+
+        if (m_StartAxis == Axis.Horizontal)
+        {
+            int cellsPerMainAxis = Mathf.Max(1, Mathf.FloorToInt((innerWidth + m_Spacing.x + 0.001f) / spaceAndCellX));
+            actualColumns = cellsPerMainAxis;
+            actualRows = Mathf.CeilToInt(rectChildren.Count / (float)actualColumns);
+        }
+        else
+        {
+            int cellsPerMainAxis = Mathf.Max(1, Mathf.FloorToInt((innerHeight + m_Spacing.y + 0.001f) / spaceAndCellY));
+            actualRows = cellsPerMainAxis;
+            actualColumns = Mathf.CeilToInt(rectChildren.Count / (float)actualRows);
+        }
+    }
+
+    /// <summary>
+    /// Computes the 0-indexed (column, row) coordinate for a given active child index.
+    /// </summary>
+    private Vector2Int CalculateCellCoordinate(int index, int actualColumns, int actualRows)
+    {
+        int positionX, positionY;
+
+        if (m_StartAxis == Axis.Horizontal)
+        {
+            positionX = index % actualColumns;
+            positionY = index / actualColumns;
+        }
+        else
+        {
+            positionX = index / actualRows;
+            positionY = index % actualRows;
+        }
+
+        // Adjust X/Y indexes based on the chosen starting corner
+        if (m_StartCorner == Corner.UpperRight || m_StartCorner == Corner.LowerRight)
+            positionX = actualColumns - 1 - positionX;
+
+        if (m_StartCorner == Corner.LowerLeft || m_StartCorner == Corner.LowerRight)
+            positionY = actualRows - 1 - positionY;
+
+        return new Vector2Int(positionX, positionY);
+    }
+
+    /// <summary>
+    /// Returns the 0-indexed (column, row) coordinate of an active layout child by its index in rectChildren.
+    /// Returns (-1, -1) if the index is out of bounds.
+    /// </summary>
+    public Vector2Int GetCellCoordinate(int childIndex)
+    {
+        if (childIndex < 0 || childIndex >= rectChildren.Count)
+            return new Vector2Int(-1, -1);
+
+        // Ensure dimensions are accurate even if called before a layout rebuild completes
+        Vector2 cellSize = GetCalculatedCellSize();
+        CalculateGridDimensions(cellSize, out int actualColumns, out int actualRows);
+
+        return CalculateCellCoordinate(childIndex, actualColumns, actualRows);
+    }
+
+    /// <summary>
+    /// Returns the 0-indexed (column, row) coordinate of a specific RectTransform child.
+    /// Returns (-1, -1) if the item is not an active layout child of this grid.
+    /// </summary>
+    public Vector2Int GetCellCoordinate(RectTransform item)
+    {
+        if (item == null)
+            return new Vector2Int(-1, -1);
+
+        int index = rectChildren.IndexOf(item);
+        return GetCellCoordinate(index);
     }
 
     /// <summary>
@@ -143,32 +242,13 @@ public class UiGridLayoutAdvanced : LayoutGroup
 
     private void SetCellsAlongAxis(int axis)
     {
-        if (rectChildren.Count == 0) return;
-
         Vector2 cellSize = GetCalculatedCellSize();
-        
-        float innerWidth = rectTransform.rect.width - padding.horizontal;
-        float innerHeight = rectTransform.rect.height - padding.vertical;
+        CalculateGridDimensions(cellSize, out int actualColumns, out int actualRows);
 
-        int cellsPerMainAxis, actualColumns, actualRows;
+        columnCount = actualColumns;
+        rowCount = actualRows;
 
-        // Protect against zero division if settings are 0
-        float spaceAndCellX = Mathf.Max(0.001f, cellSize.x + m_Spacing.x);
-        float spaceAndCellY = Mathf.Max(0.001f, cellSize.y + m_Spacing.y);
-
-        // Determine Columns & Rows
-        if (m_StartAxis == Axis.Horizontal)
-        {
-            cellsPerMainAxis = Mathf.Max(1, Mathf.FloorToInt((innerWidth + m_Spacing.x + 0.001f) / spaceAndCellX));
-            actualColumns = cellsPerMainAxis;
-            actualRows = Mathf.CeilToInt(rectChildren.Count / (float)actualColumns);
-        }
-        else
-        {
-            cellsPerMainAxis = Mathf.Max(1, Mathf.FloorToInt((innerHeight + m_Spacing.y + 0.001f) / spaceAndCellY));
-            actualRows = cellsPerMainAxis;
-            actualColumns = Mathf.CeilToInt(rectChildren.Count / (float)actualRows);
-        }
+        if (rectChildren.Count == 0) return;
 
         // Space required without padding (GetStartOffset will incorporate standard LayoutGroup childAlignment + padding)
         float requiredSpaceX = actualColumns * cellSize.x + (actualColumns - 1) * m_Spacing.x;
@@ -179,35 +259,17 @@ public class UiGridLayoutAdvanced : LayoutGroup
 
         for (int i = 0; i < rectChildren.Count; i++)
         {
-            int positionX, positionY;
-
-            if (m_StartAxis == Axis.Horizontal)
-            {
-                positionX = i % actualColumns;
-                positionY = i / actualColumns;
-            }
-            else
-            {
-                positionX = i / actualRows;
-                positionY = i % actualRows;
-            }
-
-            // Adjust X/Y indexes based on the chosen starting corner
-            if (m_StartCorner == Corner.UpperRight || m_StartCorner == Corner.LowerRight)
-                positionX = actualColumns - 1 - positionX;
-
-            if (m_StartCorner == Corner.LowerLeft || m_StartCorner == Corner.LowerRight)
-                positionY = actualRows - 1 - positionY;
+            Vector2Int coord = CalculateCellCoordinate(i, actualColumns, actualRows);
 
             // Apply positions
             if (axis == 0)
             {
-                float posX = startOffsetMainX + positionX * (cellSize.x + m_Spacing.x);
+                float posX = startOffsetMainX + coord.x * (cellSize.x + m_Spacing.x);
                 SetChildAlongAxis(rectChildren[i], 0, posX, cellSize.x);
             }
             else
             {
-                float posY = startOffsetMainY + positionY * (cellSize.y + m_Spacing.y);
+                float posY = startOffsetMainY + coord.y * (cellSize.y + m_Spacing.y);
                 SetChildAlongAxis(rectChildren[i], 1, posY, cellSize.y);
             }
         }
